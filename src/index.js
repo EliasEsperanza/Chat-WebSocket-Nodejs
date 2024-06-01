@@ -1,15 +1,23 @@
 import app from "./app.js";
-import { Server as WebsocketServer} from "socket.io";
+import { Server as WebsocketServer } from "socket.io";
 import http from "http";
 import sockets from "./sockets.js";
-
 import { connectDB } from "./database/db.js";
 
-connectDB();
-const server = http.createServer(app);
-const httpServer = server.listen(3000);
+// Conectar a la base de datos
+connectDB().then(() => {
+    console.log("Conectado a la base de datos");
 
-console.log("Server is running on port 3000");
+    const server = http.createServer(app);
+    const PORT = process.env.PORT || 3000;
 
-const io = new WebsocketServer(httpServer);
-sockets(io);
+    server.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+
+    const io = new WebsocketServer(server);
+    sockets(io);
+}).catch((err) => {
+    console.error("Error al conectar a la base de datos:", err);
+});
+
